@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamster Kombat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .app {
+            max-width: 400px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            position: relative;
+        }
+
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .user-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .level-info {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .coins-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .coins-display {
+            font-size: 36px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .profit-per-hour {
+            font-size: 14px;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .hamster-section {
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .hamster-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .hamster-button {
+            width: 280px;
+            height: 280px;
+            border: none;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff9a56, #ff6b35, #e55100);
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow: 
+                0 0 0 8px rgba(255, 107, 53, 0.2),
+                0 0 0 16px rgba(255, 107, 53, 0.1),
+                0 20px 40px rgba(255, 107, 53, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 120px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hamster-button:active {
+            transform: scale(0.95);
+            box-shadow: 
+                0 0 0 8px rgba(255, 107, 53, 0.3),
+                0 0 0 16px rgba(255, 107, 53, 0.2),
+                0 10px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        .energy-section {
+            padding: 0 20px 20px;
+        }
+
+        .energy-bar {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .energy-fill {
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 20px;
+        }
+
+        .energy-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 10px;
+            border-radius: 10px;
+            min-width: 60px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 107, 53, 0.2);
+            color: #ff6b35;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .page {
+            display: none;
+            padding: 20px;
+            padding-bottom: 100px;
+            min-height: calc(100vh - 100px);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .card-info {
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card-description {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-profit {
+            font-size: 14px;
+            color: #4CAF50;
+        }
+
+        .card-price {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .card-price:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .card-price:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .click-effect {
+            position: absolute;
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 24px;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-80px) scale(1.2);
+            }
+        }
+
+        .task-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .task-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .task-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .task-reward {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .task-button {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .task-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .offline-earnings {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: slideIn 0.5s ease-out;
+            max-width: 300px;
+        }
+
+        @keyframes slideIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .level-progress {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .level-fill {
+            background: linear-gradient(90deg, #ff6b35, #f7931e);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Главная страница -->
+        <div class="page active" id="homePage">
+            <div class="header">
+                <div class="user-info">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="user-avatar">🐹</div>
+                        <div>
+                            <div class="user-name">CEO Хомяк</div>
+                            <div class="level-info">Уровень <span id="userLevel">1</span></div>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 12px; opacity: 0.8;">Баланс</div>
+                        <div style="font-size: 14px; font-weight: bold;" id="headerBalance">0</div>
+                    </div>
+                </div>
+                
+                <div class="level-progress">
+                    <div class="level-fill" id="levelProgress" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="coins-section">
+                <div class="coins-display" id="coinsDisplay">0</div>
+                <div class="profit-per-hour">
+                    <span>💰</span>
+                    <span>Прибыль в час: <span id="profitPerHour">0</span></span>
+                </div>
+            </div>
+
+            <div class="hamster-section">
+                <div class="hamster-container">
+                    <button class="hamster-button" id="hamsterButton">
+                        🐹
+                    </button>
+                </div>
+            </div>
+
+            <div class="energy-section">
+                <div class="energy-bar">
+                    <div class="energy-fill" id="energyFill" style="width: 100%"></div>
+                </div>
+                <div class="energy-info">
+                    <span>⚡ <span id="currentEnergy">1000</span>/<span id="maxEnergy">1000</span></span>
+                    <span>+<span id="coinsPerTap">1</span> за тап</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Страница майна -->
+        <div class="page" id="minePage">
+            <div class="page-title">⛏️ Майн</div>
+            <div class="cards-grid" id="mineCards">
+                <!-- Карточки майна будут добавлены через JS -->
+            </div>
+        </div>
+
+        <!-- Страница друзей -->
+        <div class="page" id="friendsPage">
+            <div class="page-title">👥 Друзья</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="friendsCount">0</div>
+                    <div class="stat-label">Друзей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="friendsBonus">0</div>
+                    <div class="stat-label">Бонус от друзей</div>
+                </div>
+            </div>
+            <div class="task-item">
+                <div class="task-header">
+                    <div class="task-icon">👥</div>
+                    <div>
+                        <div class="task-title">Пригласить друга</div>
+                        <div class="task-reward">+25,000 монет</div>
+                    </div>
+                </div>
+                <button class="task-button" onclick="inviteFriend()">Пригласить</button>
+            </div>
+        </div>
+
+        <!-- Страница заработка -->
+        <div class="page" id="earnPage">
+            <div class="page-title">💰 Заработок</div>
+            <div class="task-item">
+                <div class="task-header">
+                    <div class="task-icon">📺</div>
+                    <div>
+                        <div class="task-title">Подписаться на YouTube канал</div>
+                        <div class="task-reward">+5,000 монет</div>
+                    </div>
+                </div>
+                <button class="task-button" onclick="completeTask('youtube', 5000)">Выполнить</button>
+            </div>
+            
+            <div class="task-item">
+                <div class="task-header">
+                    <div class="task-icon">📱</div>
+                    <div>
+                        <div class="task-title">Подписаться на Telegram канал</div>
+                        <div class="task-reward">+5,000 монет</div>
+                    </div>
+                </div>
+                <button class="task-button" onclick="completeTask('telegram', 5000)">Выполнить</button>
+            </div>
+
+            <div class="task-item">
+                <div class="task-header">
+                    <div class="task-icon">🎮</div>
+                    <div>
+                        <div class="task-title">Играть 10 минут</div>
+                        <div class="task-reward">+1,000 монет</div>
+                    </div>
+                </div>
+                <button class="task-button" onclick="completeTask('playtime', 1000)">Выполнить</button>
+            </div>
+        </div>
+
+        <!-- Страница буста -->
+        <div class="page" id="boostPage">
+            <div class="page-title">🚀 Буст</div>
+            <div class="cards-grid">
+                <div class="card" onclick="buyBoost('multitap')">
+                    <div class="card-header">
+                        <div class="card-icon">👆</div>
+                        <div class="card-info">
+                            <div class="card-title">Мультитап</div>
+                            <div class="card-description">+1 монета за тап</div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="card-profit">Уровень <span id="multitapLevel">1</span></div>
+                        <button class="card-price" id="multitapPrice">2,000 🪙</button>
+                    </div>
+                </div>
+
+                <div class="card" onclick="buyBoost('energy')">
+                    <div class="card-header">
+                        <div class="card-icon">⚡</div>
+                        <div class="card-info">
+                            <div class="card-title">Лимит энергии</div>
+                            <div class="card-description">+500 энергии</div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="card-profit">Уровень <span id="energyLevel">1</span></div>
+                        <button class="card-price" id="energyPrice">1,000 🪙</button>
+                    </div>
+                </div>
+
+                <div class="card" onclick="buyBoost('recharge')">
+                    <div class="card-header">
+                        <div class="card-icon">🔋</div>
+                        <div class="card-info">
+                            <div class="card-title">Перезарядка</div>
+                            <div class="card-description">Восстановить энергию</div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="card-profit">Доступно: <span id="rechargeCount">3</span></div>
+                        <button class="card-price">Бесплатно</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Нижняя навигация -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showPage('home')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Главная</div>
+            </div>
+            <div class="nav-item" onclick="showPage('mine')">
+                <div class="nav-icon">⛏️</div>
+                <div class="nav-label">Майн</div>
+            </div>
+            <div class="nav-item" onclick="showPage('friends')">
+                <div class="nav-icon">👥</div>
+                <div class="nav-label">Друзья</div>
+            </div>
+            <div class="nav-item" onclick="showPage('earn')">
+                <div class="nav-icon">💰</div>
+                <div class="nav-label">Заработок</div>
+            </div>
+            <div class="nav-item" onclick="showPage('boost')">
+                <div class="nav-icon">🚀</div>
+                <div class="nav-label">Буст</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class HamsterKombat {
+            constructor() {
+                this.loadGame();
+                this.initElements();
+                this.bindEvents();
+                this.startGameLoop();
+                this.generateMineCards();
+                this.updateDisplay();
+            }
+
+            loadGame() {
+                const savedData = localStorage.getItem('hamsterKombatSave');
+                
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    this.coins = data.coins || 0;
+                    this.coinsPerTap = data.coinsPerTap || 1;
+                    this.coinsPerHour = data.coinsPerHour || 0;
+                    this.energy = data.energy || 1000;
+                    this.maxEnergy = data.maxEnergy || 1000;
+                    this.level = data.level || 1;
+                    this.totalTaps = data.totalTaps || 0;
+                    this.friends = data.friends || 0;
+                    this.completedTasks = data.completedTasks || [];
+                    this.mineCards = data.mineCards || [];
+                    this.boosts = data.boosts || {
+                        multitap: { level: 1, cost: 2000 },
+                        energy: { level: 1, cost: 1000 },
+                        recharge: { count: 3 }
+                    };
+                    
+                    // Офлайн доход
+                    if (data.lastSaveTime && this.coinsPerHour > 0) {
+                        const offlineTime = Math.floor((Date.now() - data.lastSaveTime) / 1000);
+                        const offlineHours = Math.min(offlineTime / 3600, 3); // Максимум 3 часа
+                        const offlineCoins = Math.floor(offlineHours * this.coinsPerHour);
+                        
+                        if (offlineCoins > 0) {
+                            this.coins += offlineCoins;
+                            this.showOfflineEarnings(offlineCoins, offlineTime);
+                        }
+                    }
+                } else {
+                    this.coins = 0;
+                    this.coinsPerTap = 1;
+                    this.coinsPerHour = 0;
+                    this.energy = 1000;
+                    this.maxEnergy = 1000;
+                    this.level = 1;
+                    this.totalTaps = 0;
+                    this.friends = 0;
+                    this.completedTasks = [];
+                    this.mineCards = [];
+                    this.boosts = {
+                        multitap: { level: 1, cost: 2000 },
+                        energy: { level: 1, cost: 1000 },
+                        recharge: { count: 3 }
+                    };
+                }
+            }
+
+            saveGame() {
+                const saveData = {
+                    coins: this.coins,
+                    coinsPerTap: this.coinsPerTap,
+                    coinsPerHour: this.coinsPerHour,
+                    energy: this.energy,
+                    maxEnergy: this.maxEnergy,
+                    level: this.level,
+                    totalTaps: this.totalTaps,
+                    friends: this.friends,
+                    completedTasks: this.completedTasks,
+                    mineCards: this.mineCards,
+                    boosts: this.boosts,
+                    lastSaveTime: Date.now()
+                };
+                
+                localStorage.setItem('hamsterKombatSave', JSON.stringify(saveData));
+            }
+
+            initElements() {
+                this.elements = {
+                    coinsDisplay: document.getElementById('coinsDisplay'),
+                    headerBalance: document.getElementById('headerBalance'),
+                    profitPerHour: document.getElementById('profitPerHour'),
+                    hamsterButton: document.getElementById('hamsterButton'),
+                    currentEnergy: document.getElementById('currentEnergy'),
+                    maxEnergyDisplay: document.getElementById('maxEnergy'),
+                    energyFill: document.getElementById('energyFill'),
+                    coinsPerTap: document.getElementById('coinsPerTap'),
+                    userLevel: document.getElementById('userLevel'),
+                    levelProgress: document.getElementById('levelProgress'),
+                    friendsCount: document.getElementById('friendsCount'),
+                    friendsBonus: document.getElementById('friendsBonus'),
+                    multitapLevel: document.getElementById('multitapLevel'),
+                    energyLevel: document.getElementById('energyLevel'),
+                    rechargeCount: document.getElementById('rechargeCount'),
+                    multitapPrice: document.getElementById('multitapPrice'),
+                    energyPrice: document.getElementById('energyPrice')
+                };
+            }
+
+            bindEvents() {
+                this.elements.hamsterButton.addEventListener('click', (e) => this.tapHamster(e));
+                
+                // Автосохранение
+                setInterval(() => this.saveGame(), 10000);
+                window.addEventListener('beforeunload', () => this.saveGame());
+            }
+
+            tapHamster(event) {
+                if (this.energy <= 0) return;
+
+                this.coins += this.coinsPerTap;
+                this.energy = Math.max(0, this.energy - 1);
+                this.totalTaps++;
+
+                this.createTapEffect(event);
+                this.updateLevel();
+                this.updateDisplay();
+                this.saveGame();
+            }
+
+            createTapEffect(event) {
+                const effect = document.createElement('div');
+                effect.className = 'click-effect';
+                effect.textContent = `+${this.coinsPerTap}`;
+                
+                const rect = this.elements.hamsterButton.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                
+                effect.style.position = 'absolute';
+                effect.style.left = x + 'px';
+                effect.style.top = y + 'px';
+                effect.style.transform = 'translate(-50%, -50%)';
+                
+                this.elements.hamsterButton.parentElement.appendChild(effect);
+                
+                setTimeout(() => {
+                    if (effect.parentElement) {
+                        effect.parentElement.removeChild(effect);
+                    }
+                }, 1000);
+            }
+
+            updateLevel() {
+                const newLevel = Math.floor(this.totalTaps / 1000) + 1;
+                if (newLevel > this.level) {
+                    this.level = newLevel;
+                    this.showLevelUp();
+                }
+            }
+
+            showLevelUp() {
+                // Показать уведомление о повышении уровня
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: linear-gradient(145deg, #ff6b35, #f7931e);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 15px;
+                    text-align: center;
+                    z-index: 1000;
+                    animation: slideIn 0.5s ease-out;
+                `;
+                
+                notification.innerHTML = `
+                    <h3>🎉 Поздравляем!</h3>
+                    <p>Новый уровень: ${this.level}</p>
+                    <button onclick="this.parentElement.remove()" style="
+                        background: rgba(255,255,255,0.2);
+                        border: none;
+                        color: white;
+                        padding: 10px 20px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        margin-top: 10px;
+                    ">OK</button>
+                `;
+
+                document.body.appendChild(notification);
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 5000);
+            }
+
+            generateMineCards() {
+                const mineCardsData = [
+                    { id: 'ceo', title: 'CEO', icon: '👔', baseProfit: 126, baseCost: 15000, description: 'Управляй компанией' },
+                    { id: 'marketing', title: 'Маркетинг', icon: '📈', baseProfit: 264, baseCost: 25000, description: 'Привлекай клиентов' },
+                    { id: 'it', title: 'IT команда', icon: '💻', baseProfit: 792, baseCost: 100000, description: 'Разрабатывай продукты' },
+                    { id: 'support', title: 'Поддержка', icon: '🎧', baseProfit: 1584, baseCost: 500000, description: 'Помогай пользователям' },
+                    { id: 'legal', title: 'Юристы', icon: '⚖️', baseProfit: 2376, baseCost: 1200000, description: 'Решай правовые вопросы' },
+                    { id: 'hr', title: 'HR отдел', icon: '👥', baseProfit: 2970, baseCost: 2000000, description: 'Нанимай сотрудников' }
+                ];
+
+                const container = document.getElementById('mineCards');
+                container.innerHTML = '';
+
+                mineCardsData.forEach(cardData => {
+                    const existingCard = this.mineCards.find(c => c.id === cardData.id);
+                    const level = existingCard ? existingCard.level : 0;
+                    const cost = Math.floor(cardData.baseCost * Math.pow(1.6, level));
+                    const profit = Math.floor(cardData.baseProfit * (level + 1));
+
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.onclick = () => this.buyMineCard(cardData.id);
+                    
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div class="card-icon">${cardData.icon}</div>
+                            <div class="card-info">
+                                <div class="card-title">${cardData.title}</div>
+                                <div class="card-description">${cardData.description}</div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-profit">+${this.formatNumber(profit)}/час</div>
+                            <button class="card-price ${this.coins < cost ? 'disabled' : ''}" ${this.coins < cost ? 'disabled' : ''}>
+                                ${this.formatNumber(cost)} 🪙
+                            </button>
+                        </div>
+                    `;
+
+                    container.appendChild(card);
+                });
+            }
+
+            buyMineCard(cardId) {
+                const cardData = [
+                    { id: 'ceo', baseProfit: 126, baseCost: 15000 },
+                    { id: 'marketing', baseProfit: 264, baseCost: 25000 },
+                    { id: 'it', baseProfit: 792, baseCost: 100000 },
+                    { id: 'support', baseProfit: 1584, baseCost: 500000 },
+                    { id: 'legal', baseProfit: 2376, baseCost: 1200000 },
+                    { id: 'hr', baseProfit: 2970, baseCost: 2000000 }
+                ].find(c => c.id === cardId);
+
+                let existingCard = this.mineCards.find(c => c.id === cardId);
+                if (!existingCard) {
+                    existingCard = { id: cardId, level: 0 };
+                    this.mineCards.push(existingCard);
+                }
+
+                const cost = Math.floor(cardData.baseCost * Math.pow(1.6, existingCard.level));
+                
+                if (this.coins >= cost) {
+                    this.coins -= cost;
+                    existingCard.level++;
+                    
+                    const profit = Math.floor(cardData.baseProfit * existingCard.level);
+                    this.coinsPerHour += cardData.baseProfit;
+                    
+                    this.generateMineCards();
+                    this.updateDisplay();
+                    this.saveGame();
+                }
+            }
+
+            startGameLoop() {
+                // Восстановление энергии
+                setInterval(() => {
+                    if (this.energy < this.maxEnergy) {
+                        this.energy = Math.min(this.maxEnergy, this.energy + 1);
+                        this.updateDisplay();
+                    }
+                }, 1000);
+
+                // Пассивный доход
+                setInterval(() => {
+                    if (this.coinsPerHour > 0) {
+                        this.coins += Math.floor(this.coinsPerHour / 3600);
+                        this.updateDisplay();
+                    }
+                }, 1000);
+            }
+
+            updateDisplay() {
+                this.elements.coinsDisplay.textContent = this.formatNumber(this.coins);
+                this.elements.headerBalance.textContent = this.formatNumber(this.coins);
+                this.elements.profitPerHour.textContent = this.formatNumber(this.coinsPerHour);
+                this.elements.currentEnergy.textContent = this.energy;
+                this.elements.maxEnergyDisplay.textContent = this.maxEnergy;
+                this.elements.coinsPerTap.textContent = this.coinsPerTap;
+                this.elements.userLevel.textContent = this.level;
+                this.elements.friendsCount.textContent = this.friends;
+                this.elements.friendsBonus.textContent = this.formatNumber(this.friends * 25000);
+                this.elements.multitapLevel.textContent = this.boosts.multitap.level;
+                this.elements.energyLevel.textContent = this.boosts.energy.level;
+                this.elements.rechargeCount.textContent = this.boosts.recharge.count;
+                this.elements.multitapPrice.textContent = this.formatNumber(this.boosts.multitap.cost) + ' 🪙';
+                this.elements.energyPrice.textContent = this.formatNumber(this.boosts.energy.cost) + ' 🪙';
+
+                // Обновляем полоску энергии
+                const energyPercent = (this.energy / this.maxEnergy) * 100;
+                this.elements.energyFill.style.width = energyPercent + '%';
+
+                // Обновляем прогресс уровня
+                const levelProgress = ((this.totalTaps % 1000) / 1000) * 100;
+                this.elements.levelProgress.style.width = levelProgress + '%';
+            }
+
+            formatNumber(num) {
+                if (num >= 1000000000) {
+                    return (num / 1000000000).toFixed(1) + 'B';
+                } else if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1) + 'M';
+                } else if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + 'K';
+                }
+                return num.toString();
+            }
+
+            showOfflineEarnings(coins, seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                
+                let timeText = '';
+                if (hours > 0) {
+                    timeText = `${hours}ч ${minutes}м`;
+                } else {
+                    timeText = `${minutes}м`;
+                }
+
+                const notification = document.createElement('div');
+                notification.className = 'offline-earnings';
+                notification.innerHTML = `
+                    <h3 style="margin-bottom: 15px;">🎉 Добро пожаловать!</h3>
+                    <p style="margin-bottom: 10px;">Вы отсутствовали: ${timeText}</p>
+                    <p style="font-size: 28px; font-weight: bold; color: #ffd700; margin-bottom: 20px;">+${this.formatNumber(coins)}</p>
+                    <button onclick="this.parentElement.remove()" style="
+                        background: rgba(255,255,255,0.2);
+                        border: none;
+                        color: white;
+                        padding: 15px 30px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-size: 16px;
+                        font-weight: bold;
+                    ">Забрать</button>
+                `;
+
+                document.body.appendChild(notification);
+            }
+        }
+
+        // Глобальные функции
+        function showPage(pageName) {
+            // Скрываем все страницы
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Показываем выбранную страницу
+            document.getElementById(pageName + 'Page').classList.add('active');
+            
+            // Обновляем навигацию
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+
+        function buyBoost(boostType) {
+            if (boostType === 'multitap' && game.coins >= game.boosts.multitap.cost) {
+                game.coins -= game.boosts.multitap.cost;
+                game.coinsPerTap++;
+                game.boosts.multitap.level++;
+                game.boosts.multitap.cost = Math.floor(game.boosts.multitap.cost * 2);
+            } else if (boostType === 'energy' && game.coins >= game.boosts.energy.cost) {
+                game.coins -= game.boosts.energy.cost;
+                game.maxEnergy += 500;
+                game.energy = game.maxEnergy;
+                game.boosts.energy.level++;
+                game.boosts.energy.cost = Math.floor(game.boosts.energy.cost * 1.5);
+            } else if (boostType === 'recharge' && game.boosts.recharge.count > 0) {
+                game.energy = game.maxEnergy;
+                game.boosts.recharge.count--;
+            }
+            
+            game.updateDisplay();
+            game.saveGame();
+        }
+
+        function completeTask(taskId, reward) {
+            if (!game.completedTasks.includes(taskId)) {
+                game.coins += reward;
+                game.completedTasks.push(taskId);
+                game.updateDisplay();
+                game.saveGame();
+                
+                // Показать уведомление
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: linear-gradient(145deg, #4CAF50, #45a049);
+                    color: white;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    z-index: 1000;
+                    animation: slideIn 0.5s ease-out;
+                `;
+                notification.textContent = `+${game.formatNumber(reward)} монет получено!`;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => notification.remove(), 3000);
+                
+                // Отключаем кнопку
+                event.target.disabled = true;
+                event.target.textContent = 'Выполнено';
+                event.target.style.background = '#666';
+            }
+        }
+
+        function inviteFriend() {
+            game.friends++;
+            game.coins += 25000;
+            game.updateDisplay();
+            game.saveGame();
+            
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(145deg, #4CAF50, #45a049);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                z-index: 1000;
+                animation: slideIn 0.5s ease-out;
+            `;
+            notification.textContent = '+25,000 монет за друга!';
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Запускаем игру
+        const game = new HamsterKombat();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96eeea6b324277bb',t:'MTc1NTE1ODM5Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
